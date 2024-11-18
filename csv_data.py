@@ -5,75 +5,95 @@ from datetime import datetime
 
 # Task 1: Reading Data from a CSV File
 def read_data(file_path):
-  # try-except block to handle exceptions
-    # open the file in read mode
-      # create a csv reader object
-  data = []
-      # add the rows to the data list
-  return data
-  # handle FileNotFoundError
-  print("File not found.")
-  # handle csv.Error
-  print(f"CSV error: {e}")
-  # if there is an error return None
-  return None
+    try:
+        with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            data = [row for row in reader]
+        return data
+    except FileNotFoundError:
+        print("File not found.")
+        return None
+    except csv.Error as e:
+        print(f"CSV error: {e}")
+        return None
 
 # Task 2: Writing Data to a CSV File
 def write_data(data, file_path, headers):
-  # try-except block to handle exceptions
-    # open the file in write mode
-      # create a csv writer object (not the DictWriter object)
-      # write the headers
-      # write the data rows
-  print(f"Data successfully written to {file_path}")
-  # handle csv.Error
-  print(f"CSV error: {e}")
+    try:
+        with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(headers)
+            writer.writerows(data)
+        print(f"Data successfully written to {file_path}")
+    except csv.Error as e:
+        print(f"CSV error: {e}")
 
 # Task 3: Data Cleaning and Transformation
 def clean_and_transform_data(file_path):
-  # try-except block to handle exceptions
-    # open the file in read mode
-      # create a csv dictionary reader object
-  cleaned_data = []
-      # iterate over each row in the csv reader object
-        # Remove leading and trailing spaces from 'Product' and 'Customer' columns
+    try:
+        with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            cleaned_data = []
 
-        # Remove leading and trailing spaces from 'Sales' column and convert to float
+            for row in reader:
+                # Clean 'Product' and 'Customer' columns
+                row['Product'] = row['Product'].strip()
+                row['Customer'] = row['Customer'].strip()
 
-        # Transform 'Date' column to datetime object
+                # Clean 'Sales' column and convert to float
+                row['Sales'] = float(row['Sales'].strip())
 
-        # add the row to the cleaned_data list
-  return cleaned_data
-  # handle FileNotFoundError
-  print("File not found.")
-  # handle csv.Error
-  print(f"CSV error: {e}")
-  # if there is an error return None
-  return None
+                # Convert 'Date' column to datetime object
+                row['Date'] = datetime.strptime(row['Date'].strip(), '%Y-%m-%d')
+
+                cleaned_data.append(row)
+        return cleaned_data
+    except FileNotFoundError:
+        print("File not found.")
+        return None
+    except csv.Error as e:
+        print(f"CSV error: {e}")
+        return None
+    except ValueError as e:
+        print(f"Data formatting error: {e}")
+        return None
 
 # Task 4: Data Aggregation and Analysis
 def data_aggregation_and_analysis(data):
-  # Calculate total sales
-  total_sales = None
-  # Calculate average sales
-  average_sales = None
-  # Find the row with the maximum sales
-  max_sale = None
-  # Find the row with the minimum sales
-  min_sale = None
-  return total_sales, average_sales, max_sale, min_sale
+    if not data:
+        return None, None, None, None
+
+    total_sales = sum(row['Sales'] for row in data)
+    average_sales = total_sales / len(data) if len(data) > 0 else 0
+
+    max_sale = max(data, key=lambda x: x['Sales'])
+    min_sale = min(data, key=lambda x: x['Sales'])
+
+    return total_sales, average_sales, max_sale, min_sale
 
 # Task 5: Data Filtering
 def filter_and_select_data(file_path, category, min_quantity):
-  # try-except block to handle exceptions
-    # open the file in read mode
-      # create a csv dictionary reader object
-      # filter the data rows where the 'Category' column matches the category argument and the 'Quantity' column is less than the min_quantity argument
-  filtered_data = []
-  return filtered_data
-  # handle FileNotFoundError
-  print("File not found.")
-  # handle csv.Error
-  print(f"CSV error: {e}")
-  # if there is an error return None
-  return None
+    try:
+        with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            filtered_data = [
+                row for row in reader
+                if row['Category'].strip() == category and int(row['Quantity'].strip()) < min_quantity
+            ]
+        return filtered_data
+    except FileNotFoundError:
+        print("File not found.")
+        return None
+    except csv.Error as e:
+        print(f"CSV error: {e}")
+        return None
+    except ValueError as e:
+        print(f"Data formatting error: {e}")
+        return None
+
+# Example usage (uncomment and modify paths as needed)
+# data = read_data('input.csv')
+# write_data(data, 'output.csv', ['Header1', 'Header2'])
+# cleaned_data = clean_and_transform_data('input.csv')
+# total, avg, max_row, min_row = data_aggregation_and_analysis(cleaned_data)
+# filtered = filter_and_select_data('input.csv', 'Electronics', 5)
